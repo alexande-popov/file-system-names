@@ -114,7 +114,7 @@ def show_renamed(path=None, what=None, to=None, ignore=None):
         # is there item from ignore_tup in path_string?
         check_ignore = lambda path_str: any([x in path_str for x in ignore_tup])
 
-    for root, dirs, files in os.walk(path, topdown = False):
+    for root, dirs, files in os.walk(path, topdown=False):
 
         if ignore:
             if check_ignore(root):
@@ -133,6 +133,69 @@ def show_renamed(path=None, what=None, to=None, ignore=None):
                     continue
             new_dir_name = rename_with(_dir, what, to)
             print(os.path.join(root, new_dir_name))
+
+
+def rename_recu(path=None, what=None, to=None, ignore=None):
+    """Rename files and dirs"""
+
+    if path is None:
+        path = os.getcwd()
+
+    if ignore:
+        # convert ignore-param in tuple
+        ignore_tup = tuple(ignore.split()) if isinstance(ignore, str) else tuple(ignore)
+        # is there item from ignore_tup in path_string?
+        check_ignore = lambda path_str: any([x in path_str for x in ignore_tup])
+
+    not_renamed = []
+    for root, dirs, files in os.walk(path, topdown=False):
+
+        if ignore:
+            if check_ignore(root):
+                continue
+
+        for _file in files:
+
+            if ignore:
+                if check_ignore(_file):
+                    continue
+
+            new_file_name = rename_with(_file, what, to)
+            if new_file_name == _file:
+                continue
+
+            new_file_path = os.path.join(root, new_file_name)
+            old_file_path = os.path.join(root, _file)
+
+            if os.path.exists(new_file_path):
+                print(f"Can't rename{old_file_path}")
+                not_renamed.append(old_file_path)
+            else:
+                os.replace(old_file_path, new_file_path)
+                #os.remane(old_file_path, new_file_path)
+
+        for _dir in dirs:
+
+            if ignore:
+                if check_ignore(_dir):
+                    continue
+
+            new_dir_name = rename_with(_dir, what, to)
+            if new_dir_name == _dir:
+                continue
+
+            new_dir_path = os.path.join(root, new_dir_name)
+            old_dir_path = os.path.join(root, _dir)
+
+            if os.path.exists(new_dir_path):
+                print(f"Can't rename{old_dir_path}")
+                not_renamed.append(old_dir_path)
+            else:
+                os.replace(old_dir_path, new_dir_path)
+                #os.remane(old_dir_path, new_dir_path)
+
+    return not_renamed
+
 
 # path = get_current_dir(verbose=True)
 # show_dir(path, ignore=[])
